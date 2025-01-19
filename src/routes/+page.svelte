@@ -63,10 +63,11 @@
 		<a
 			href="https://mijn.universiteitleiden.nl/results/latest"
 			class="mb-4 text-center text-blue-500 underline"
-			target="_blank">Get your results from here</a
+			target="_blank">Copy your results from here</a
 		>
+		<video src="/tutorial.webm" autoplay loop class="rounded-md border border-secondary"></video>
 		<Textarea
-			placeholder="Paste here your course data from Student portal..."
+			placeholder="Paste your results from Student portal here..."
 			bind:value={inputString}
 			onpaste={(e) => {
 				if (!e.clipboardData) return;
