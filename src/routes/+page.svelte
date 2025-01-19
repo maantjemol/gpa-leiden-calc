@@ -65,6 +65,7 @@
 			class="mb-4 text-center text-blue-500 underline"
 			target="_blank">Copy your results from here</a
 		>
+		<!-- svelte-ignore a11y_media_has_caption -->
 		<video src="/tutorial.webm" autoplay loop class="rounded-md border border-secondary"></video>
 		<Textarea
 			placeholder="Paste your results from Student portal here..."
@@ -133,8 +134,8 @@
 										onclick={() => {
 											dialogCourse = course;
 											diaglogOpen = true;
-											selectedCourse = '';
-											dialogCredits = -1;
+											selectedCourse = dialogCourse.possibleCourses?.[0]?.courseName || '';
+											dialogCredits = dialogCourse.possibleCourses?.[0]?.ec || -1;
 										}}>Select course</button
 									>
 								</div>
@@ -211,7 +212,7 @@
 						size="icon"
 						class="size-8 shrink-0 rounded-full"
 						onclick={() => dialogCredits--}
-						disabled={dialogCredits < 0}
+						disabled={dialogCredits <= 0}
 					>
 						<Minus />
 						<span class="sr-only">Decrease</span>
