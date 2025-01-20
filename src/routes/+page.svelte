@@ -9,6 +9,8 @@
 	import { parseCourseData, type Course } from '$lib/course';
 	import { browser } from '$app/environment';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { VisXYContainer, VisLine, VisAxis, VisScatter } from '@unovis/svelte';
+	// import { data } from './data'
 
 	let inputString = $state('');
 
@@ -21,6 +23,30 @@
 		browser ? JSON.parse(localStorage.getItem('courseData') || '[]') : []
 	);
 	let loading = $state(false);
+
+	let timeseries = $derived.by(() => {
+		let data = [];
+		let i = 0;
+		let average = 0;
+
+		for (let course of courseData) {
+			if (course.date && course.grade && course.credits) {
+				if (course.grade === 'Passed') continue;
+				let newAverage = (average * i + course.grade) / (i + 1);
+
+				let dateParts = course.date.split('-');
+				let dateObject = new Date(+dateParts[2], +dateParts[1] - 1, +dateParts[0]);
+
+				// create number from date string (2021-09-01), parse it to Date object
+				data.push({ x: dateObject.getTime(), y: newAverage, label: course.courseName });
+				average = newAverage;
+				i++;
+			}
+		}
+		return data;
+	});
+
+	$inspect(timeseries);
 
 	$effect(() => {
 		if (loading) return;
@@ -53,6 +79,11 @@
 		}
 		return totalGrade / totalCredits;
 	});
+
+	const padding = {
+		top: 5,
+		bottom: 5
+	};
 </script>
 
 {#if courseData.length === 0}
@@ -108,7 +139,29 @@
 
 {#if courseData.length > 0}
 	<section class="container max-w-prose py-16" transition:fade>
-		<!-- <ScrollArea class="relative h-[50vh] w-full rounded-md border p-4"> -->
+		<h2 class="pb-4 text-center font-bold">GPA progression</h2>
+		{#key timeseries}
+			<VisXYContainer yDomain={[0, 10]} {padding}>
+				<VisLine data={timeseries} x={(d) => d.x} y={(d) => d.y} />
+				<VisScatter
+					data={timeseries}
+					x={(d) => d.x}
+					y={(d) => d.y}
+					color={'#8EB1F3'}
+					size={6}
+					label={(d: { y: number }) => d.y.toFixed(1)}
+				/>
+				<VisAxis
+					type="x"
+					label="Date"
+					numTicks={6}
+					tickFormat={(value: number) => Intl.DateTimeFormat().format(value)}
+				/>
+				<VisAxis type="y" />
+			</VisXYContainer>
+		{/key}
+
+		<h2 class="pb-4 pt-12 text-center font-bold">Courses</h2>
 		<Table.Root>
 			<Table.Caption>All the courses</Table.Caption>
 			<Table.Header class="sticky top-0">
